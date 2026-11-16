@@ -877,7 +877,7 @@ function renderPlayers(){
 }
 
 /* ---------- Salary cap (snapshot: nhltraderumor.com cap table, Oct 26 2026; PuckPedia for statuses) ---------- */
-const CAP={limit:104000000,total:103896811,overage:1250000,asOf:'Oct 26',
+const CAP={limit:104000000,total:103896811,overage:1250000,asOf:'Oct 26',foot:'Hellebuyck\'s charge is prorated this season after the Oct 23 trade. "Overage & other" is last season\'s $1.25M bonus overage plus remaining charges (IR, etc.) needed to reach the reported total.',
  // [name, pos, age, cap hit 2026-27, years left incl. this season, status at expiry, note]
  F:[['Timo Meier','RW/LW',30,8800000,5,'UFA'],['Jack Hughes','C',25,8000000,4,'UFA'],['Jesper Bratt','LW/RW',28,7875000,5,'UFA'],['Nico Hischier','C',27,7250000,6,'UFA'],
     ['Anthony Mantha','LW/RW',32,4750000,2,'UFA'],['Arseny Gritsyuk','LW/RW',25,3250000,3,'UFA'],['Evan Rodrigues','C/RW',33,3075000,1,'UFA'],['Connor Brown','RW',32,3000000,3,'UFA'],
@@ -889,7 +889,7 @@ const money=(v,d=2)=>'$'+(v/1e6).toFixed(d)+'M';
 const thru=y=>{const a=2026+y-1;return `${a}-${String(a+1).slice(2)}`};
 function renderCap(){
   const sum=a=>a.reduce((t,p)=>t+p[3],0);
-  const f=sum(CAP.F),d=sum(CAP.D),g=sum(CAP.G),other=CAP.total-f-d-g, space=CAP.limit-CAP.total;
+  const f=sum(CAP.F),d=sum(CAP.D),g=sum(CAP.G),other=Math.max(0,CAP.total-f-d-g), space=CAP.space??(CAP.limit-CAP.total);
   const seg=[['Forwards',f,getComputedStyle(document.documentElement).getPropertyValue('--red').trim()||'#ce1126'],['Defense',d,'#f4f4f5'],['Goalies',g,'#8b8b94'],['Overage & other',other,'#4a4a52']];
   const all=[...CAP.F,...CAP.D,...CAP.G], exp=all.filter(p=>p[4]===1);
   if(!all.length){ // totals only (player-by-player breakdown not loaded yet)
@@ -912,7 +912,7 @@ function renderCap(){
        <div class="yrs">${Array.from({length:8},(_,i)=>`<i class="${i<yrs?'on':''}"></i>`).join('')}</div></div>
        <div class="amt"><b>${money(hit)}</b><span>${yrs} yr${yrs>1?'s':''} left · ${(hit/CAP.limit*100).toFixed(1)}%</span>${full?`<span style="display:block">${money(full,1)} from '27-28</span>`:''}</div></div>`).join('')+'</div>';
   }
-  h+=`<div class="sub" style="margin-top:12px;line-height:1.5">Hellebuyck's charge is prorated this season after the Oct 23 trade. "Overage & other" is last season's $1.25M bonus overage plus remaining charges (IR, etc.) needed to reach the reported total. Contract data doesn't update live.</div>`;
+  h+=`<div class="sub" style="margin-top:12px;line-height:1.5">${CAP.foot||''} Contract data updates weekly, not live.</div>`;
   document.getElementById('cap').innerHTML=h;
 }
 
