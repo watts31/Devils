@@ -34,7 +34,7 @@ h2 small{font-family:Inter;font-size:11px;letter-spacing:0;text-transform:none;c
 /* header */
 .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .brand{display:flex;align-items:center;gap:10px}
-.mono{width:38px;height:38px;border-radius:11px;background:var(--red);display:grid;place-items:center;font-family:var(--num);font-weight:700;font-size:18px;overflow:hidden}
+.mono{width:38px;height:38px;border-radius:11px;background:var(--red);display:grid;place-items:center;font-family:var(--num);font-weight:700;font-size:15px;overflow:hidden}
 .mono.has{background:transparent}
 .mono img{width:38px;height:38px;object-fit:contain}
 .brand b{font-size:16px}.brand div div{font-size:12px;color:var(--mut)}
@@ -401,6 +401,8 @@ svg.bnr.lg{width:38px;height:49px}
 
 <script>
 const ME='NJD', TZ='America/New_York';
+// ---- Team settings (the only Devils-specific values outside the data blocks) ----
+const SHORT='Devils', ARENA='Prudential Center · Newark', ESPN_TEAM='nj', NHL_ID=1, NAME_RE=/New Jersey/i, REPO='watts31/devils';
 const TEAMS={
  TBL:['Tampa Bay','Atlantic','#002868'],MTL:['Montréal','Atlantic','#af1e2d'],OTT:['Ottawa','Atlantic','#c52032'],BOS:['Boston','Atlantic','#c99700'],
  FLA:['Florida','Atlantic','#c8102e'],BUF:['Buffalo','Atlantic','#003087'],DET:['Detroit','Atlantic','#ce1126'],TOR:['Toronto','Atlantic','#00205b'],
@@ -547,7 +549,7 @@ async function refresh(){
   setPill(LIVE?'live':'', LIVE?'Updating…':'Connecting…');
   try{
     const [sch,sb,stn]=await Promise.all([
-      getJSON(`${API}/teams/nj/schedule?seasontype=2`),
+      getJSON(`${API}/teams/${ESPN_TEAM}/schedule?seasontype=2`),
       getJSON(`${API}/scoreboard`).catch(()=>null),
       getJSON(STAND_URL).catch(()=>null)
     ]);
@@ -619,7 +621,7 @@ function boxHTML(g,b){
   if(!b) return h+`<div class="bx-clock" style="padding-bottom:14px">${state==='in'?'Box score loading…':''}</div>`;
 
   const pp=powerPlay(b);
-  if(pp) h+=`<div class="pp"><div>${pp.team===ME?'🚨 DEVILS':pp.team} POWER PLAY · ${pp.n}</div><span>${Math.floor(pp.left/60)}:${String(Math.round(pp.left%60)).padStart(2,'0')}</span></div>`;
+  if(pp) h+=`<div class="pp"><div>${pp.team===ME?'🚨 '+SHORT.toUpperCase():pp.team} POWER PLAY · ${pp.n}</div><span>${Math.floor(pp.left/60)}:${String(Math.round(pp.left%60)).padStart(2,'0')}</span></div>`;
 
   // linescore
   const nP=Math.max(3,b.side[away]?.lines.length||0,b.side[home]?.lines.length||0);
@@ -763,7 +765,7 @@ function openTeam(t){
   const gs=GAMES.filter(g=>g.opp===t), p=gs.filter(g=>g.res);
   const rec=`${p.filter(g=>g.res==='W').length}-${p.filter(g=>g.res==='L').length}-${p.filter(g=>g.res==='O').length}`;
   showSheet(`<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">${mark(t,48,true)}<div><b style="font-size:17px">${TEAMS[t][0]}</b><div class="sub">${TEAMS[t][1]} · season series ${rec}</div></div></div>`+
-   gs.map(g=>`<div class="li ${g.id&&g.state!=='pre'?'tap':''}" ${g.id&&g.state!=='pre'?`onclick="openGame('${g.id}')"`:''}>${(g.home?house:plane)(colorOf(g.res))}<div style="font-size:13px">${g.date?fmt(g.date,{weekday:'short',month:'short',day:'numeric'}):'Date TBA in snapshot'}<div class="sub">${g.home?'Home · Prudential Center':'Away'}</div></div>
+   gs.map(g=>`<div class="li ${g.id&&g.state!=='pre'?'tap':''}" ${g.id&&g.state!=='pre'?`onclick="openGame('${g.id}')"`:''}>${(g.home?house:plane)(colorOf(g.res))}<div style="font-size:13px">${g.date?fmt(g.date,{weekday:'short',month:'short',day:'numeric'}):'Date TBA in snapshot'}<div class="sub">${g.home?'Home · '+ARENA.split(' · ')[0]:'Away'}</div></div>
    <span class="t">${g.res?`<span class="res ${g.res}" style="display:inline-grid;margin-right:8px;vertical-align:middle">${g.res==='O'?'L':g.res}</span>${g.na?'':`${g.gf}-${g.ga}`}${g.ot?(g.so?' SO':' OT'):''}`:g.state==='in'?'<b style="color:var(--loss)">LIVE</b>':g.date?fmt(g.date,{hour:'numeric',minute:'2-digit'}):''}</span></div>`).join(''));
 }
 
@@ -773,7 +775,7 @@ let PLAYERS=null, PVIEW='sk', PSORT={sk:'pts',g:'w'}, PALL=false, ptimer=null;
 const SNAP_PLAYERS={sk:[{n:'J. Hughes',num:'',pos:'C',gp:21,g:10,a:17,pts:27,hit:null,blk:null,sog:81}],g:[{n:'C. Hellebuyck',num:'',pos:'G',gp:7,w:null,gaa:2.25,sv:.916,so:null}]};
 const seasonId=()=>{const d=new Date(),y=d.getFullYear();return d.getMonth()>=8?`${y}${y+1}`:`${y-1}${y}`};
 let NUMS={}, PDATA=null;
-const DATA_URLS=['https://raw.githubusercontent.com/watts31/devils/main/data/players.json','data/players.json'];
+const DATA_URLS=[`https://raw.githubusercontent.com/${REPO}/main/data/players.json`,'data/players.json'];
 async function loadData(){for(const u of DATA_URLS){try{const d=await getJSON(u+'?t='+Date.now());if(d&&d.sk&&d.sk.length)return d}catch(e){}}return null}
 async function loadPlayers(){
   const d=await loadData();
@@ -783,9 +785,9 @@ async function loadPlayers(){
   try{
     const sid=seasonId();
     const [club,roster,rt]=await Promise.all([
-      getJSON(`https://api-web.nhle.com/v1/club-stats/NJD/${sid}/2`).catch(()=>getJSON('https://api-web.nhle.com/v1/club-stats/NJD/now')),
-      getJSON('https://api-web.nhle.com/v1/roster/NJD/current').catch(()=>null),
-      getJSON(`https://api.nhle.com/stats/rest/en/skater/realtime?limit=-1&cayenneExp=${encodeURIComponent(`franchiseId=23 and gameTypeId=2 and seasonId=${sid}`)}`).catch(()=>null)
+      getJSON(`https://api-web.nhle.com/v1/club-stats/${ME}/${sid}/2`).catch(()=>getJSON(`https://api-web.nhle.com/v1/club-stats/${ME}/now`)),
+      getJSON(`https://api-web.nhle.com/v1/roster/${ME}/current`).catch(()=>null),
+      getJSON(`https://api.nhle.com/stats/rest/en/skater/realtime?limit=-1&cayenneExp=${encodeURIComponent(`gameTypeId=2 and seasonId=${sid}`)}`).catch(()=>null)
     ]);
     const num={}; if(roster) for(const k of ['forwards','defensemen','goalies']) for(const p of roster[k]||[]) num[p.id]=p.sweaterNumber;
     const real={}; for(const r of rt?.data||[]) real[r.playerId]=r;
@@ -886,8 +888,14 @@ const thru=y=>{const a=2026+y-1;return `${a}-${String(a+1).slice(2)}`};
 function renderCap(){
   const sum=a=>a.reduce((t,p)=>t+p[3],0);
   const f=sum(CAP.F),d=sum(CAP.D),g=sum(CAP.G),other=CAP.total-f-d-g, space=CAP.limit-CAP.total;
-  const seg=[['Forwards',f,'#ce1126'],['Defense',d,'#f4f4f5'],['Goalies',g,'#8b8b94'],['Overage & other',other,'#4a4a52']];
+  const seg=[['Forwards',f,getComputedStyle(document.documentElement).getPropertyValue('--red').trim()||'#ce1126'],['Defense',d,'#f4f4f5'],['Goalies',g,'#8b8b94'],['Overage & other',other,'#4a4a52']];
   const all=[...CAP.F,...CAP.D,...CAP.G], exp=all.filter(p=>p[4]===1);
+  if(!all.length){ // totals only (player-by-player breakdown not loaded yet)
+    document.getElementById('cap').innerHTML=`<div class="capbig"><span class="num">${money(CAP.total)}</span><span class="sub">of ${money(CAP.limit,1)} cap</span></div>
+     <div class="capbar"><i style="width:${CAP.total/CAP.limit*100}%;background:var(--red)"></i></div>
+     <div class="capleg"><div><span>Cap space</span><b style="color:var(--win)">${money(space,2)}</b></div><div><span>Roster</span><b>${CAP.roster||'–'} players</b></div></div>
+     <div class="sub" style="margin-top:14px;line-height:1.5">${CAP.note||''}</div>`;
+    return;}
   let h=`<div class="capbig"><span class="num">${money(CAP.total)}</span><span class="sub">of ${money(CAP.limit,1)} cap</span></div>
   <div class="capbar">${seg.map(([,v,c])=>`<i style="width:${v/CAP.limit*100}%;background:${c}"></i>`).join('')}</div>
   <div class="capleg">${seg.map(([l,v,c])=>`<div><span><i style="background:${c}"></i>${l}</span><b>${money(v)}</b></div>`).join('')}
@@ -1004,7 +1012,7 @@ function bsCardHTML(){
   if(!list.length&&!q)return '';
   return `<div class="card"><h2>On Bluesky <span class="bsbadge">REAL POSTS · LIVE</span></h2>
    <div class="bsbar"><button class="${BSORT==='top'?'on':''}" onclick="BSORT='top';renderBs()">🔥 Top</button><button class="${BSORT==='new'?'on':''}" onclick="BSORT='new';renderBs()">⚡ Latest</button>
-   ${XSEC==='trade'?`<button class="${BDEV?'on':''}" onclick="BDEV=!BDEV;renderBs()">Devils only</button>`:''}</div>
+   ${XSEC==='trade'?`<button class="${BDEV?'on':''}" onclick="BDEV=!BDEV;renderBs()">${SHORT} only</button>`:''}</div>
    <div class="bsf" id="bsfeed"><div class="xnote" style="padding:10px 0">Loading posts…</div></div></div>`;
 }
 async function loadBsky(k){
@@ -1024,7 +1032,7 @@ async function loadBsky(k){
 const ago=d=>{const m=Math.max(1,Math.round((Date.now()-new Date(d))/60000));return m<60?m+'m':m<1440?Math.round(m/60)+'h':Math.round(m/1440)+'d'};
 function renderBs(){
   const el=document.getElementById('bsfeed'); if(!el)return;
-  document.querySelectorAll('.bsbar button').forEach(b=>{const t=b.textContent;b.classList.toggle('on',(t.includes('Top')&&BSORT==='top')||(t.includes('Latest')&&BSORT==='new')||(t.includes('Devils')&&BDEV))});
+  document.querySelectorAll('.bsbar button').forEach(b=>{const t=b.textContent;b.classList.toggle('on',(t.includes('Top')&&BSORT==='top')||(t.includes('Latest')&&BSORT==='new')||(t.includes(' only')&&BDEV))});
   const c=BSCACHE[XSEC]; if(!c)return;
   let ps=c.posts.filter(p=>p.record?.text!=null);
   if(XSEC==='trade'&&BDEV)ps=ps.filter(p=>DEV_RE.test(p.record.text+' '+(p.embed?.external?.title||'')));
@@ -1032,7 +1040,7 @@ function renderBs(){
   if(BSORT==='top'){ps=ps.filter(p=>new Date(p.indexedAt)>wk).sort((a,b)=>((b.likeCount||0)+2*(b.repostCount||0))-((a.likeCount||0)+2*(a.repostCount||0)))}
   else ps.sort((a,b)=>new Date(b.indexedAt)-new Date(a.indexedAt));
   ps=ps.slice(0,15);
-  if(!ps.length){el.innerHTML=`<div class="xnote" style="padding:10px 0">${c.ok?(XSEC==='trade'&&BDEV?'No Devils talk from these insiders this week. Turn off "Devils only" to see everything.':'No recent posts.'):'Couldn\'t reach Bluesky right now. This works once the app is online (GitHub).'}</div>`;return}
+  if(!ps.length){el.innerHTML=`<div class="xnote" style="padding:10px 0">${c.ok?(XSEC==='trade'&&BDEV?`No ${SHORT} talk from these insiders this week. Turn off "${SHORT} only" to see everything.`:'No recent posts.'):'Couldn\'t reach Bluesky right now. This works once the app is online (GitHub).'}</div>`;return}
   el.innerHTML=ps.map(p=>{
     const a=p.author||{}, nm=a.displayName||a.handle, id=(p.uri||'').split('/').pop();
     const ext=p.embed?.external||p.embed?.media?.external;
@@ -1055,7 +1063,7 @@ async function loadST(){
     const sid=seasonId();
     const r=await getJSON(`https://api.nhle.com/stats/rest/en/team/summary?limit=-1&cayenneExp=${encodeURIComponent(`seasonId=${sid} and gameTypeId=2`)}`);
     const d=(r.data||[]).filter(t=>t.powerPlayPct!=null);
-    const me=d.find(t=>t.teamId===1||/New Jersey/i.test(t.teamFullName||''));
+    const me=d.find(t=>t.teamId===NHL_ID||NAME_RE.test(t.teamFullName||''));
     if(!me||d.length<30)throw 0;
     const rk=(k,v)=>1+d.filter(t=>t[k]>v).length;
     ST={pp:me.powerPlayPct*100,ppR:rk('powerPlayPct',me.powerPlayPct),pk:me.penaltyKillPct*100,pkR:rk('penaltyKillPct',me.penaltyKillPct),live:true};
@@ -1093,15 +1101,15 @@ function previewHTML(g){
   const vs=GAMES.filter(x=>x.opp===g.opp), done=vs.filter(x=>x.res), last=done[done.length-1];
   const ser=`${done.filter(x=>x.res==='W').length}-${done.filter(x=>x.res==='L').length}-${done.filter(x=>x.res==='O').length}`;
   const left=vs.filter(x=>!x.res).length;
-  const venue=g.venue?`${g.venue}${g.city?' · '+g.city:''}`:(g.home?'Prudential Center · Newark':`Away · ${TEAMS[g.opp]?.[0]||g.opp}`);
+  const venue=g.venue?`${g.venue}${g.city?' · '+g.city:''}`:(g.home?ARENA:`Away · ${TEAMS[g.opp]?.[0]||g.opp}`);
   const tv=(g.tv||[]).length?g.tv.map(x=>`<span class="tv">${esc(x)}</span>`).join(''):`<span class="sub">${LIVE?'Not announced yet':'Listings load in the live version'}</span>`;
   const form=GAMES.filter(x=>x.res).slice(-5).map(x=>`<i style="background:${colorOf(x.res)}">${x.res==='O'?'L':x.res}</i>`).join('');
   return `<div class="pv">
    <div class="pvr"><span class="k">WATCH</span><span class="v">${tv}</span></div>
    <div class="pvr"><span class="k">WHERE</span><span class="v">${esc(venue)}</span></div>
-   <div class="pvr"><span class="k">SERIES</span><span class="v">${done.length?`Devils ${ser} this season${last?` · last: <b style="color:${colorOf(last.res)}">${last.res==='O'?'OTL':last.res}</b> ${last.na?'':`${last.gf}-${last.ga}`} on ${fmt(last.date,{month:'short',day:'numeric'})}`:''}`:'First meeting this season'} · ${left} left</span></div>
-   <div class="pvr"><span class="k">STANDINGS</span><span class="v">NJ ${divPlace(ME)}${STAND[ME]?` (${STAND[ME][1]} pts)`:''} · ${g.opp} ${divPlace(g.opp)}${STAND[g.opp]?` (${STAND[g.opp][1]} pts)`:''}</span></div>
-   <div class="pvr"><span class="k">FORM</span><span class="v">Devils last 5 <span class="form">${form}</span></span></div>
+   <div class="pvr"><span class="k">SERIES</span><span class="v">${done.length?`${SHORT} ${ser} this season${last?` · last: <b style="color:${colorOf(last.res)}">${last.res==='O'?'OTL':last.res}</b> ${last.na?'':`${last.gf}-${last.ga}`} on ${fmt(last.date,{month:'short',day:'numeric'})}`:''}`:'First meeting this season'} · ${left} left</span></div>
+   <div class="pvr"><span class="k">STANDINGS</span><span class="v">${ME==='NJD'?'NJ':ME} ${divPlace(ME)}${STAND[ME]?` (${STAND[ME][1]} pts)`:''} · ${g.opp} ${divPlace(g.opp)}${STAND[g.opp]?` (${STAND[g.opp][1]} pts)`:''}</span></div>
+   <div class="pvr"><span class="k">FORM</span><span class="v">${SHORT} last 5 <span class="form">${form}</span></span></div>
   </div>`;
 }
 setInterval(()=>{if(!document.hidden)render()},60000);
