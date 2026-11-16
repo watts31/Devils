@@ -818,7 +818,7 @@ function renderPlayers(){
   const total=rows.length; if(!PALL&&PVIEW==='sk')rows=rows.slice(0,10);
   const cell=(p,k)=>k==='sv'?f3(p.sv):k==='gaa'?f2(p.gaa):dash(p[k]);
   let h=`<table class="pt"><tr><th>${PVIEW==='sk'?'Skater':'Goalie'}</th>${cols.map(([k,l])=>`<th class="${k===key?'on':''}" onclick="setSort('${k}')">${l}</th>`).join('')}</tr>`;
-  h+=rows.map(p=>`<tr><td><div class="pl">${jn(p.num,0,p.n)}<div style="min-width:0"><b>${esc(p.n)}</b><span class="pos">${p.pos||''}</span></div></div></td>${cols.map(([k])=>`<td class="${k===key?'on':''}">${cell(p,k)}</td>`).join('')}</tr>`).join('')+'</table>';
+  h+=rows.map(p=>`<tr><td><div class="pl">${jn(p.num,0,p.n)}<div style="min-width:0"><b>${esc(p.n)}</b><span class="pos">${({L:'LW',R:'RW'})[p.pos]||p.pos||''}</span></div></div></td>${cols.map(([k])=>`<td class="${k===key?'on':''}">${cell(p,k)}</td>`).join('')}</tr>`).join('')+'</table>';
   if(PVIEW==='sk'&&total>10)h+=`<button class="more" onclick="PALL=!PALL;renderPlayers()">${PALL?'Show top 10':`Show all ${total} skaters`}</button>`;
   if(!PLAYERS.live)h+=`<div class="sub" style="margin-top:10px">Full roster stats load in the live version.</div>`;
   document.getElementById('ptable').innerHTML=h;
