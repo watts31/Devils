@@ -270,6 +270,11 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 92px)}
 .bsbar button.on{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
 .bsbadge{font-size:10px;font-weight:700;letter-spacing:.06em;color:#93c5fd;background:rgba(29,78,216,.18);padding:3px 7px;border-radius:5px;text-transform:none}
 
+
+svg.jsy{width:30px;height:30px;flex:none;display:inline-block}
+svg.jsy.lg{width:46px;height:46px}
+.lt svg.jsy{width:28px;height:28px}
+
 /* sheet */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.2s;z-index:5}
 .scrim.on{opacity:1;pointer-events:auto}
@@ -748,7 +753,14 @@ function openTeam(t){
 let PLAYERS=null, PVIEW='sk', PSORT={sk:'pts',g:'w'}, PALL=false, ptimer=null;
 const SNAP_PLAYERS={sk:[{n:'J. Hughes',num:'',pos:'C',gp:21,g:10,a:17,pts:27,hit:null,blk:null,sog:81}],g:[{n:'C. Hellebuyck',num:'',pos:'G',gp:7,w:null,gaa:2.25,sv:.916,so:null}]};
 const seasonId=()=>{const d=new Date(),y=d.getFullYear();return d.getMonth()>=8?`${y}${y+1}`:`${y-1}${y}`};
+let NUMS={}, PDATA=null;
+const DATA_URLS=['https://raw.githubusercontent.com/watts31/devils/main/data/players.json','data/players.json'];
+async function loadData(){for(const u of DATA_URLS){try{const d=await getJSON(u+'?t='+Date.now());if(d&&d.sk&&d.sk.length)return d}catch(e){}}return null}
 async function loadPlayers(){
+  const d=await loadData();
+  if(d){PDATA=d;PLAYERS={sk:d.sk,g:d.g,live:true,updated:d.updated};NUMS=d.nums||{};
+    if(d.st){ST={...d.st,live:true};renderST()} renderPlayers(); renderCap();
+    clearTimeout(ptimer); ptimer=setTimeout(loadPlayers,600e3); return;}
   try{
     const sid=seasonId();
     const [club,roster,rt]=await Promise.all([
@@ -768,7 +780,13 @@ async function loadPlayers(){
   renderPlayers();
   clearTimeout(ptimer); ptimer=setTimeout(loadPlayers,(LIVEGAME&&LIVEGAME.state==='in')?120e3:600e3);
 }
-const jn=(n,lg,name='')=>`<span class="jn ${lg?'lg':''}">${n===''||n==null?esc(name.split(/[ .]+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2)):n}</span>`;
+const jn=(n,lg,name='')=>{
+  if(n===''||n==null)return `<span class="jn ${lg?'lg':''}">${esc(name.split(/[ .]+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2))}</span>`;
+  const big=String(n).length>1;
+  return `<svg class="jsy ${lg?'lg':''}" viewBox="0 0 40 40" aria-label="#${n}"><path d="M14 3.5 17 2.2Q20 4.6 23 2.2l3 1.3 10.5 7.3-4.2 7.4-3.3-1.9V37H11V16.3l-3.3 1.9-4.2-7.4z" fill="#ce1126" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/>
+   <path d="M5.4 14.2 8.8 12.1M6.6 16.3 10 14.3M34.6 14.2 31.2 12.1M33.4 16.3 30 14.3" stroke="#fff" stroke-width="1.3"/>
+   <rect x="11" y="31" width="18" height="2" fill="#000"/><rect x="11" y="33.3" width="18" height="1.2" fill="#fff"/>
+   <text x="20" y="${big?26.5:27}" text-anchor="middle" font-family="Barlow Condensed,Inter,sans-serif" font-weight="700" font-size="${big?17:19}" fill="#fff" stroke="#000" stroke-width="1.6" paint-order="stroke">${n}</text></svg>`};
 const f3=v=>v==null?'–':v.toFixed(3).replace(/^0/,'');
 const f2=v=>v==null?'–':(+v).toFixed(2);
 const dash=v=>v==null?'–':v;
@@ -832,7 +850,7 @@ function renderCap(){
    <div class="stat"><div class="k">Top 5 share</div><div class="v">${Math.round([...all].sort((a,b)=>b[3]-a[3]).slice(0,5).reduce((t,p)=>t+p[3],0)/CAP.total*100)}%</div></div></div>`;
   for(const [k,label,tot] of [['F','Forwards',f],['D','Defense',d],['G','Goalies',g]]){
     h+=`<div class="ctg"><div class="dh">${label}<span>${money(tot)}</span></div>`+[...CAP[k]].sort((a,b)=>b[3]-a[3]).map(([n,pos,age,hit,yrs,st,note,full])=>
-      `<div class="cr">${jn('',0,n)}<div class="nm"><b>${n}${note?`<span class="st IR">${note}</span>`:''}</b><span>${pos} · ${age} · thru ${thru(yrs)}</span><span class="st ${st}">${st} ${String(2026+yrs).slice(2).padStart(2,"'")}</span>
+      `<div class="cr">${jn(NUMS[n]??'',0,n)}<div class="nm"><b>${n}${note?`<span class="st IR">${note}</span>`:''}</b><span>${pos} · ${age} · thru ${thru(yrs)}</span><span class="st ${st}">${st} ${String(2026+yrs).slice(2).padStart(2,"'")}</span>
        <div class="yrs">${Array.from({length:8},(_,i)=>`<i class="${i<yrs?'on':''}"></i>`).join('')}</div></div>
        <div class="amt"><b>${money(hit)}</b><span>${yrs} yr${yrs>1?'s':''} left · ${(hit/CAP.limit*100).toFixed(1)}%</span>${full?`<span style="display:block">${money(full,1)} from '27-28</span>`:''}</div></div>`).join('')+'</div>';
   }
@@ -984,6 +1002,7 @@ function bsAdd(){let v=(document.getElementById('bsin').value||'').trim().replac
 /* ---------- Special teams (NHL public stats API, ranked across all 32 teams) ---------- */
 let ST={pp:20.6,ppR:19,pk:66.0,pkR:30,live:false}, sttimer=null;
 async function loadST(){
+  if(PDATA&&PDATA.st)return;
   try{
     const sid=seasonId();
     const r=await getJSON(`https://api.nhle.com/stats/rest/en/team/summary?limit=-1&cayenneExp=${encodeURIComponent(`seasonId=${sid} and gameTypeId=2`)}`);
