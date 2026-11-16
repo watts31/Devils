@@ -242,7 +242,7 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 92px)}
 
 
 .lgh{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--mut);margin:4px 0 8px}
-.lg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.lg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:14px}
 .lg:last-child{margin-bottom:0}
 .lg.skg .lt:first-child{grid-column:span 2}
 .lt{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:11px 12px}
@@ -283,6 +283,16 @@ svg.bnr.lg{width:38px;height:49px}
 .fpick .row2{display:flex;justify-content:center;gap:3px}
 .fpick svg.bnr{width:28px;height:36px}
 .fpick span{display:block;font-size:11px;color:var(--mut);margin-top:6px}
+
+
+.lt{display:flex;align-items:center;gap:10px}
+.lt .ltl{flex:1;min-width:0}
+.lt .ln{font-size:12.5px;font-weight:600;color:#d4d4d8;overflow-wrap:anywhere;line-height:1.25}
+.lt{gap:8px}
+.lt .ltb{flex:none;padding-left:8px;border-left:1px solid var(--line);align-self:stretch;display:flex;align-items:center}
+.lt .ltb svg.bnr.lg{width:28px;height:36px}
+.skg .lt:first-child .ltb svg.bnr.lg{width:36px;height:46px}
+.lt .ltb .jn{width:34px;height:34px}
 
 /* sheet */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.2s;z-index:5}
@@ -844,7 +854,7 @@ function renderPlayers(){
   const tile=(lab,k,fmtv,subf,asc,pool)=>{
     const p=(!known||known[k])?best(pool,k,asc):null;
     if(!p)return `<div class="lt"><div class="k">${lab.toUpperCase()}</div><div class="lv2">–</div><div class="sub">Loads live</div></div>`;
-    return `<div class="lt"><div class="k">${lab.toUpperCase()}</div><div class="lv2">${fmtv(p[k])}</div><div class="lp">${jn(p.num,1,p.n)}<span>${esc(p.n)}</span></div>${subf?`<div class="sub">${subf(p)}</div>`:''}</div>`;
+    return `<div class="lt"><div class="ltl"><div class="k">${lab.toUpperCase()}</div><div class="lv2">${fmtv(p[k])}</div><div class="ln">${esc(p.n).replace('. ','.&nbsp;')}</div>${subf?`<div class="sub">${subf(p)}</div>`:''}</div><div class="ltb">${jn(p.num,1,p.n)}</div></div>`;
   };
   document.getElementById('leaders').innerHTML=
     `<div class="lgh">Skaters</div><div class="lg skg">${SK.map(([l,k,f,sf])=>tile(l,k,f,sf,false,sk)).join('')}</div>`+
