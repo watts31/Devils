@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0a0a0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Devils in the Details">
 <meta name="application-name" content="Devils in the Details">
@@ -1032,6 +1033,7 @@ function previewHTML(g){
 setInterval(()=>{if(!document.hidden)render()},60000);
 
 render(); refresh(); loadPlayers(); loadST(); renderCap(); go(TAB);
+if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 </body>
 </html>
