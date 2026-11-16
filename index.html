@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="https://a.espncdn.com/i/teamlogos/nhl/500/nj.png">
 <title>Devils in the Details</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Squada+One&family=Teko:wght@600&family=Big+Shoulders+Display:wght@800&family=Saira+Extra+Condensed:wght@800&family=Graduate&family=Russo+One&family=Anton&family=Oswald:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Oswald:wght@700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a0b; --card:#131316; --card2:#1a1a1e; --line:#25252b; --txt:#f4f4f5; --mut:#8b8b94; --dim:#4a4a52;
@@ -365,11 +365,6 @@ svg.bnr.lg{width:38px;height:49px}
 <div class="card" id="pcard">
   <h2>Player stats <div class="seg" id="seg"><button class="on" onclick="setView('sk')">Skaters</button><button onclick="setView('g')">Goalies</button></div></h2>
   <div id="ptable"></div>
-
-<div class="card">
-  <h2>Number style <small>tap to choose</small></h2>
-  <div id="fontpick" class="fpick"></div>
-</div>
 </div>
 
 </section>
@@ -814,7 +809,7 @@ function numPaths(n){const d=String(n).split(''),gap=2.3,w=10;const tot=d.length
   return {tot,p:d.map((c,i)=>(DIG[c]||[]).map(pt=>`<polygon points="${pt.map((v,k)=>k%2?v:v+i*(w+gap)).join(' ')}"/>`).join('')).join('')}}
 // Number style: 'drawn' = hand-built block digits; otherwise a web font (picked in Players tab).
 const NUMFONTS=[['drawn','Block (drawn)'],['Teko','Teko'],['Big Shoulders Display','Big Shoulders'],['Saira Extra Condensed','Saira'],['Graduate','Graduate'],['Squada One','Squada'],['Russo One','Russo'],['Anton','Anton'],['Oswald','Oswald']];
-let NUMFONT='drawn'; try{NUMFONT=localStorage.getItem('ditd-numfont')||'drawn'}catch(e){}
+let NUMFONT='Oswald';
 function fontNum(n,font){const two=String(n).length>1;
   return `<text x="18" y="31.5" text-anchor="middle" font-family="'${font}',sans-serif" font-size="${two?30:32}" ${two?'textLength="30" lengthAdjust="spacingAndGlyphs"':''} fill="#ce1126" stroke="#18181b" stroke-width="1.4" paint-order="stroke">${n}</text>`}
 const jn=(n,lg,name='',font)=>{
@@ -1072,7 +1067,7 @@ function renderFontPick(){
   el.innerHTML=NUMFONTS.map(([f,l])=>`<button class="${f===NUMFONT?'on':''}" onclick="setNumFont('${f}')"><div class="row2">${jn(30,0,'',f)}${jn(23,0,'',f)}${jn(7,0,'',f)}</div><span>${l}</span></button>`).join('');
 }
 function setNumFont(f){NUMFONT=f;try{localStorage.setItem('ditd-numfont',f)}catch(e){};renderFontPick();renderPlayers();renderCap()}
-document.fonts&&document.fonts.ready.then(renderFontPick);
+document.fonts&&document.fonts.ready.then(()=>{renderPlayers();renderCap()});
 
 /* ---------- Next-game preview ---------- */
 function countdown(d){
@@ -1102,7 +1097,7 @@ function previewHTML(g){
 }
 setInterval(()=>{if(!document.hidden)render()},60000);
 
-render(); refresh(); loadPlayers(); loadST(); renderCap(); renderFontPick(); go(TAB);
+render(); refresh(); loadPlayers(); loadST(); renderCap(); go(TAB);
 if('serviceWorker' in navigator&&location.protocol==='https:'){navigator.serviceWorker.register('sw.js').catch(()=>{})}
 </script>
 </body>
