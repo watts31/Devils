@@ -14,7 +14,7 @@
 <link rel="icon" type="image/png" href="https://a.espncdn.com/i/teamlogos/nhl/500/nj.png">
 <title>Devils in the Details</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Squada+One&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0a0b; --card:#131316; --card2:#1a1a1e; --line:#25252b; --txt:#f4f4f5; --mut:#8b8b94; --dim:#4a4a52;
@@ -271,9 +271,9 @@ body{padding-bottom:calc(env(safe-area-inset-bottom) + 92px)}
 .bsbadge{font-size:10px;font-weight:700;letter-spacing:.06em;color:#93c5fd;background:rgba(29,78,216,.18);padding:3px 7px;border-radius:5px;text-transform:none}
 
 
-svg.jsy{width:30px;height:30px;flex:none;display:inline-block}
-svg.jsy.lg{width:46px;height:46px}
-.lt svg.jsy{width:28px;height:28px}
+svg.bnr{width:24px;height:31px;flex:none;display:inline-block;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.5))}
+svg.bnr.lg{width:38px;height:49px}
+.lt svg.bnr.lg{width:30px;height:39px}
 
 /* sheet */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:.2s;z-index:5}
@@ -782,11 +782,17 @@ async function loadPlayers(){
 }
 const jn=(n,lg,name='')=>{
   if(n===''||n==null)return `<span class="jn ${lg?'lg':''}">${esc(name.split(/[ .]+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2))}</span>`;
-  const big=String(n).length>1;
-  return `<svg class="jsy ${lg?'lg':''}" viewBox="0 0 40 40" aria-label="#${n}"><path d="M14 3.5 17 2.2Q20 4.6 23 2.2l3 1.3 10.5 7.3-4.2 7.4-3.3-1.9V37H11V16.3l-3.3 1.9-4.2-7.4z" fill="#ce1126" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/>
-   <path d="M5.4 14.2 8.8 12.1M6.6 16.3 10 14.3M34.6 14.2 31.2 12.1M33.4 16.3 30 14.3" stroke="#fff" stroke-width="1.3"/>
-   <rect x="11" y="31" width="18" height="2" fill="#000"/><rect x="11" y="33.3" width="18" height="1.2" fill="#fff"/>
-   <text x="20" y="${big?26.5:27}" text-anchor="middle" font-family="Barlow Condensed,Inter,sans-serif" font-weight="700" font-size="${big?17:19}" fill="#fff" stroke="#000" stroke-width="1.6" paint-order="stroke">${n}</text></svg>`};
+  // Mini "raised to the rafters" banner: block red number with black outline, last name on big badges,
+  // red/black/red stripes near the bottom, finishing in a band of white.
+  const two=String(n).length>1, last=esc((name.split(/\s+/).pop()||'').toUpperCase().slice(0,12));
+  const nm=lg&&last, ny=nm?31:29, fs=two?(nm?21:24):(nm?23:26);
+  return `<svg class="bnr ${lg?'lg':''}" viewBox="0 0 36 46" aria-label="#${n}">
+   <rect x=".5" y=".5" width="35" height="45" rx="1.5" fill="#f4f4f5" stroke="#000" stroke-opacity=".35"/>
+   <rect x=".5" y=".5" width="35" height="3" fill="#18181b"/><rect x=".5" y="3.5" width="35" height="1" fill="#ce1126"/>
+   ${nm?`<text x="18" y="11.5" text-anchor="middle" font-family="'Squada One',Impact,sans-serif" font-size="6.6" ${last.length>6?'textLength="31" lengthAdjust="spacingAndGlyphs"':''} fill="#ce1126" stroke="#18181b" stroke-width=".35" letter-spacing=".2">${last}</text>`:''}
+   <text x="18" y="${ny}" text-anchor="middle" font-family="'Squada One',Impact,sans-serif" font-size="${fs}" fill="#ce1126" stroke="#18181b" stroke-width="1.5" paint-order="stroke" letter-spacing="-.3">${n}</text>
+   <rect x=".5" y="34" width="35" height="1.4" fill="#ce1126"/><rect x=".5" y="35.4" width="35" height="3.6" fill="#18181b"/><rect x=".5" y="39" width="35" height="1.4" fill="#ce1126"/>
+  </svg>`};
 const f3=v=>v==null?'–':v.toFixed(3).replace(/^0/,'');
 const f2=v=>v==null?'–':(+v).toFixed(2);
 const dash=v=>v==null?'–':v;
@@ -806,7 +812,7 @@ function renderPlayers(){
   const tile=(lab,k,fmtv,subf,asc,pool)=>{
     const p=(!known||known[k])?best(pool,k,asc):null;
     if(!p)return `<div class="lt"><div class="k">${lab.toUpperCase()}</div><div class="lv2">–</div><div class="sub">Loads live</div></div>`;
-    return `<div class="lt"><div class="k">${lab.toUpperCase()}</div><div class="lv2">${fmtv(p[k])}</div><div class="lp">${jn(p.num,0,p.n)}<span>${esc(p.n)}</span></div>${subf?`<div class="sub">${subf(p)}</div>`:''}</div>`;
+    return `<div class="lt"><div class="k">${lab.toUpperCase()}</div><div class="lv2">${fmtv(p[k])}</div><div class="lp">${jn(p.num,1,p.n)}<span>${esc(p.n)}</span></div>${subf?`<div class="sub">${subf(p)}</div>`:''}</div>`;
   };
   document.getElementById('leaders').innerHTML=
     `<div class="lgh">Skaters</div><div class="lg skg">${SK.map(([l,k,f,sf])=>tile(l,k,f,sf,false,sk)).join('')}</div>`+
