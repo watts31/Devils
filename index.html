@@ -784,15 +784,17 @@ async function loadPlayers(){
 // Devils-style block numerals: tall solid shapes on a 10x18 grid, heavy verticals (3.4),
 // slightly lighter horizontals (2.8), narrow slit counters. Built from rectangles/polygons.
 const DIG=(()=>{const V=3.4,H=2.8,W=10,T=18,m=(T-H)/2,R=(x,y,w,h)=>[x,y,x+w,y,x+w,y+h,x,y+h];
+  // Angled terminals: top bar that dips down at its left end, bottom bar that rises at its left end.
+  const D=1.9, TOP=[0,D,3.2,0,W,0,W,H,3.2,H,0,H+D], BOT=[0,T-H-D,3.2,T-H,W,T-H,W,T,3.2,T,0,T-D];
   return {
    0:[R(0,0,W,H),R(0,T-H,W,H),R(0,0,V,T),R(W-V,0,V,T)],
    1:[[4.4,0,7.8,0,7.8,T,4.4,T,4.4,4.6,1.4,6.2,1.4,3.2]],
-   2:[R(0,0,W,H),R(W-V,0,V,m+H),R(0,m,W,H),R(0,m,V,T-m),R(0,T-H,W,H)],
-   3:[R(0,0,W,H),R(2.2,m,W-2.2,H),R(0,T-H,W,H),R(W-V,0,V,T)],
+   2:[TOP,R(W-V,0,V,m+H),R(0,m,W,H),R(0,m,V,T-m),R(0,T-H,W,H)],
+   3:[TOP,R(2.2,m,W-2.2,H),BOT,R(W-V,0,V,T)],
    4:[R(0,0,V,m+H+0.6),R(0,m+0.6,W,H),R(W-V-0.4,0,V,T)],
-   5:[R(0,0,W,H),R(0,0,V,m+H),R(0,m,W,H),R(W-V,m,V,T-m),R(0,T-H,W,H)],
+   5:[R(0,0,W,H),R(0,0,V,m+H),R(0,m,W,H),R(W-V,m,V,T-m),BOT],
    6:[R(0,0,W,H),R(0,0,V,T),R(0,m,W,H),R(W-V,m,V,T-m),R(0,T-H,W,H)],
-   7:[[0,0,W,0,W,H+1.2,5.8,T,2.4,T,W-V,H,0,H]],
+   7:[[0,D,3.2,0,W,0,W,H+1.2,5.8,T,2.4,T,W-V,H,3.2,H,0,H+D]],
    8:[R(0,0,W,H),R(0,m,W,H),R(0,T-H,W,H),R(0,0,V,T),R(W-V,0,V,T)],
    9:[R(0,0,W,H),R(0,0,V,m+H),R(0,m,W,H),R(W-V,0,V,T),R(0,T-H,W,H)]};})();
 function numPaths(n){const d=String(n).split(''),gap=2.3,w=10;const tot=d.length*w+(d.length-1)*gap;
