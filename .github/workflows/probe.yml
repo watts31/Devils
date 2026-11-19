@@ -13,10 +13,9 @@ jobs:
       - run: |
           mkdir -p probe
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/130 Safari/537.36"
-          for f in simulations_recent.csv simulations.csv; do curl -sL -A "$UA" "https://moneypuck.com/moneypuck/simulations/$f" -o probe/$f; echo "$f $(wc -c < probe/$f)"; head -c 600 probe/$f; echo; done
-          curl -sL -A "$UA" "https://moneypuck.com/moneypuck/simulations/" -o probe/simdir.html; head -c 1500 probe/simdir.html; echo
-          curl -sL "https://api.nhle.com/stats/rest/en/team/summary?limit=2&cayenneExp=gameTypeId=2%20and%20seasonId=20262027" -o probe/teamsummary.json; head -c 1500 probe/teamsummary.json; echo
-          for f in probe/*.csv; do head -3 "$f" > "$f.head"; rm "$f"; done
+          for f in playoff_graph.csv points_graph.csv; do curl -sL -A "$UA" "https://moneypuck.com/moneypuck/simulations/$f" -o probe/$f; echo "$f $(wc -l < probe/$f) lines"; head -c 700 probe/$f; echo; tail -c 400 probe/$f; echo; done
+          rm -f probe/simdir.html probe/teamsummary.json
+          for f in probe/*.csv; do (head -4 "$f"; echo ...; tail -3 "$f") > "$f.head"; rm "$f"; done
       - run: |
           git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add probe && git commit -m "Temporary: probe results" && git pull --rebase && git push
