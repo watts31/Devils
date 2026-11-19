@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Goal clip test</title>
+<style>
+body{margin:0;padding:16px;background:#0a0a0b;color:#f4f4f5;font:15px/1.45 system-ui,sans-serif}
+h1{font-size:20px;margin:0 0 6px} h2{font-size:15px;margin:22px 0 8px;color:#fbbf24}
+.box{background:#131316;border:1px solid #25252b;border-radius:14px;padding:12px;margin-bottom:12px}
+.v{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.v iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.sub{color:#8b8b94;font-size:13px} .ok{color:#22c55e} .bad{color:#ef4444}
+</style></head><body>
+<h1>Goal clip test</h1>
+<div class="sub">Tap play on each video. Tell Claude which ones play (A, B, C).</div>
+
+<h2>A · NHL player — Meier goal tonight</h2>
+<div class="box"><div class="v"><iframe src="https://www.nhl.com/video/embed/6408574032112" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe></div></div>
+
+<h2>B · Brightcove player — same goal</h2>
+<div class="box"><div class="v"><iframe src="https://players.brightcove.net/6415718365001/EXtG1xJ7H_default/index.html?videoId=6408574032112" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe></div></div>
+
+<h2>C · Can the app read the NHL's goal list directly?</h2>
+<div class="box" id="c">Checking…</div>
+<script>
+fetch('https://api-web.nhle.com/v1/gamecenter/2026020345/landing').then(r=>r.json()).then(d=>{
+  const n=(d.summary?.scoring||[]).reduce((t,p)=>t+(p.goals||[]).length,0);
+  document.getElementById('c').innerHTML='<span class="ok">Yes</span> — read '+n+' goals live from the NHL.';
+}).catch(e=>{document.getElementById('c').innerHTML='<span class="bad">No</span> — blocked ('+e.message+'). We\'d use the GitHub job instead.';});
+</script>
+</body></html>
