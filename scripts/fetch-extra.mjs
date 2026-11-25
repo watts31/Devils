@@ -51,7 +51,8 @@ const picks = await safe('picks', async () => {
   const h = await text(`https://capwages.com/teams/${CW}`);
   const i = h.indexOf('id="__NEXT_DATA__"'), j = h.indexOf('>', i) + 1, k = h.indexOf('</script>', j);
   const d = JSON.parse(h.slice(j, k)).props?.pageProps?.draftPicks || [];
-  return d.map((p) => ({ y: +p.year, r: p.round, team: p.team, cond: (p.conditions || []).map((c) => c.description || c.condition || c).filter((c) => typeof c === 'string'), away: !!p.isTradedAway, td: p.tradedDate || null }));
+  console.log('pick sample', JSON.stringify(d.find((p) => p.conditions && (p.conditions.length || typeof p.conditions !== 'object')) || d[0]).slice(0, 500));
+  return d.map((p) => ({ y: +p.year, r: p.round, team: p.team, cond: [].concat(p.conditions || []).map((c) => typeof c === 'string' ? c : (c?.description || c?.condition || c?.text || '')).filter(Boolean), away: !!p.isTradedAway, td: p.tradedDate || null }));
 }, old.picks || []);
 const drafted = await safe('drafted', async () => {
   const yrs = [y, y - 1, y - 2, y - 3, y - 4];
