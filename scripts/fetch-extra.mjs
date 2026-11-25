@@ -1,7 +1,7 @@
 // Runs on GitHub's servers a few times a day: injuries, prospects, draft picks and franchise history
 // for the More and News tabs. Saved to data/extra.json.
 import { readFileSync, writeFileSync } from 'node:fs';
-const TEAM = 'NJD', FRANCHISE = 23, ESPN_NAME = 'New Jersey Devils', CW = 'new_jersey_devils';
+const TEAM = 'NJD', FRANCHISE = 23, ESPN_NAME = 'New Jersey Devils', CW = 'new_jersey_devils', ESPN_ABBR = 'nj', SHORT = 'Devils';
 const UA = { 'User-Agent': 'Mozilla/5.0 (personal team app)' };
 const get = async (u) => { const r = await fetch(u, { headers: UA }); if (!r.ok) throw new Error(`${r.status} ${u}`); return r.json(); };
 const text = async (u) => { const r = await fetch(u, { headers: UA }); if (!r.ok) throw new Error(`${r.status} ${u}`); return r.text(); };
@@ -94,6 +94,26 @@ const history = await safe('history', async () => {
     },
   };
 }, old.history || null);
+
+// --- Calendar feed (subscribe once, stays up to date) ---
+await safe('ics', async () => {
+  const d = await get(`https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/teams/${ESPN_ABBR}/schedule?seasontype=2`);
+  const z = (t) => new Date(t).toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+  const icsEsc = (x) => String(x || '').replace(/[\;,]/g, (c) => '\\' + c).replace(/\n/g, '\\n');
+  const ev = (d.events || []).map((e) => {
+    const c = e.competitions?.[0] || {}, cs = c.competitors || [];
+    const me = cs.find((x) => x.team?.displayName === ESPN_NAME), op = cs.find((x) => x !== me);
+    if (!me || !op) return '';
+    const tv = [...new Set((c.broadcasts || []).map((b) => b.media?.shortName).filter(Boolean))].join(', ');
+    const sc = c.status?.type?.completed ? ` (${me.score?.displayValue ?? ''}-${op.score?.displayValue ?? ''})` : '';
+    return ['BEGIN:VEVENT', `UID:${e.id}@${TEAM.toLowerCase()}-app`, `DTSTAMP:${z(now)}`, `DTSTART:${z(e.date)}`, 'DURATION:PT2H45M',
+      `SUMMARY:${icsEsc(`${SHORT} ${me.homeAway === 'home' ? 'vs' : '@'} ${op.team?.shortDisplayName || op.team?.displayName}${sc}`)}`,
+      `LOCATION:${icsEsc(c.venue?.fullName || '')}`, `DESCRIPTION:${icsEsc(tv ? 'TV: ' + tv : '')}`, 'END:VEVENT'].join('\r\n');
+  }).filter(Boolean);
+  if (ev.length < 20) throw new Error('short schedule');
+  writeFileSync('data/schedule.ics', ['BEGIN:VCALENDAR', 'VERSION:2.0', `PRODID:-//${SHORT} app//EN`, `X-WR-CALNAME:${SHORT} games`, 'X-PUBLISHED-TTL:PT6H', 'REFRESH-INTERVAL;VALUE=DURATION:PT6H', ...ev, 'END:VCALENDAR'].join('\r\n') + '\r\n');
+  console.log('ics', ev.length, 'games');
+}, null);
 
 const out = { team: TEAM, season: sid, injuries, prospects, picks, drafted, history };
 const prev = { ...old }; delete prev.updated;
